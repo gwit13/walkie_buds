@@ -11,6 +11,9 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 
@@ -18,8 +21,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "switchboard";
 
+    public Button playback;
+    public FloatingActionButton share;
+
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static String fileName = null;
+
+    private boolean mStartRecording = true;
 
     private MediaRecorder recorder = null;
     private MediaPlayer player = null;
@@ -103,13 +111,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        playback = findViewById(R.id.button);
+        share = findViewById(R.id.floatingActionButton);
     }
 
+
+    //final implementations - to do
     public void shareAudio(View view) {
 
     }
 
-    public void playback(View view) {
-
+    public void playback(View view) { //WRONG, FIX IT
+//        onRecord(mStartRecording);
+//        if (mStartRecording) {
+//            playback.setText("Stop");
+//        } else {
+//            playback.setText("Record");
+//        }
+//        mStartRecording = !mStartRecording;
     }
 }
