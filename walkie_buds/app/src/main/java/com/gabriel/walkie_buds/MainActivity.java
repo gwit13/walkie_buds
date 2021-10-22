@@ -2,9 +2,12 @@ package com.gabriel.walkie_buds;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -12,7 +15,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -22,12 +27,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "switchboard";
 
     public Button playback;
-    public FloatingActionButton share;
+    public ExtendedFloatingActionButton share;
+    public TextView text;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static String fileName = null;
 
     private boolean mStartRecording = true;
+    private boolean mStartPlaying = true;
 
     private MediaRecorder recorder = null;
     private MediaPlayer player = null;
@@ -70,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     //actionable methods
     private void startRecord(){
         recorder = new MediaRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.VOICE_CALL); //change this to try different inputs
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC); //change this to try different inputs
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setOutputFile(fileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -80,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() on record failed");
         }
+
+//        //debug
+//        AudioManager audioManager = (AudioManager) WalkieBuds.getAppContext().getSystemService(Context.AUDIO_SERVICE);
+//        System.out.println(audioManager.getMode());
 
         recorder.start();
     }
@@ -112,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        fileName = getExternalCacheDir().getAbsolutePath();
+        fileName += "/audiorecordtest.3gp";
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
         playback = findViewById(R.id.button);
         share = findViewById(R.id.floatingActionButton);
     }
@@ -119,16 +135,31 @@ public class MainActivity extends AppCompatActivity {
 
     //final implementations - to do
     public void shareAudio(View view) {
-
+        onRecord(mStartRecording);
+        mStartRecording = !mStartRecording;
     }
 
     public void playback(View view) { //WRONG, FIX IT
-//        onRecord(mStartRecording);
-//        if (mStartRecording) {
-//            playback.setText("Stop");
-//        } else {
-//            playback.setText("Record");
-//        }
-//        mStartRecording = !mStartRecording;
+        onPlay(mStartPlaying);
+        if(mStartPlaying){
+            playback.setText("Stop");
+        }
+        else{
+            playback.setText("Playback");
+        }
+        mStartPlaying = !mStartPlaying;
+    }
+
+    public void onStop(){
+        super.onStop();
+        if(recorder != null){
+            recorder.release();
+            recorder = null;
+        }
+
+        if(player != null){
+            player.release();
+            player = null;
+        }
     }
 }
