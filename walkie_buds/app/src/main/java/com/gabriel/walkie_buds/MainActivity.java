@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -29,8 +32,12 @@ public class MainActivity extends AppCompatActivity {
     public Button playback;
     public ExtendedFloatingActionButton share;
     public TextView text;
+    public TextView btstatus;
+    public TextView recstatus;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static final int REQUEST_MODIFY_AUDIO_SETTINGS = 300;
+
     private static String fileName = null;
 
     private boolean mStartRecording = true;
@@ -41,7 +48,17 @@ public class MainActivity extends AppCompatActivity {
 
     //request permission
     private boolean permissionToRecord = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private boolean permissionToModify = false;
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.MODIFY_AUDIO_SETTINGS};
+
+    //bluetooth
+    public AudioManager am;
+
+
+    @Override
+    public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        return super.registerReceiver(receiver, filter);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -49,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode){
             case REQUEST_RECORD_AUDIO_PERMISSION:
                 permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+            case REQUEST_MODIFY_AUDIO_SETTINGS:
+                permissionToModify = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                 break;
         }
         if(!permissionToRecord)
@@ -82,7 +102,9 @@ public class MainActivity extends AppCompatActivity {
         recorder.setAudioSamplingRate(8000);
         recorder.setOutputFile(fileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
+        am.startBluetoothSco();
         try{
             recorder.prepare();
         } catch (IOException e) {
@@ -93,10 +115,12 @@ public class MainActivity extends AppCompatActivity {
 //        AudioManager audioManager = (AudioManager) WalkieBuds.getAppContext().getSystemService(Context.AUDIO_SERVICE);
 //        System.out.println(audioManager.getMode());
 
+        recstatus.setText("Recording");
         recorder.start();
     }
 
     private void stopRecord(){
+        recstatus.setText("Not Recording");
         recorder.stop();
         recorder.release();
         recorder = null;
@@ -128,9 +152,43 @@ public class MainActivity extends AppCompatActivity {
         fileName += "/audiorecordtest.3gp";
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
 
         playback = findViewById(R.id.button);
         share = findViewById(R.id.floatingActionButton);
+        btstatus = findViewById(R.id.btstatus);
+        recstatus = findViewById(R.id.recstatus);
+
+        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        registerReceiver(new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+                Log.d(LOG_TAG, "Audio SCO state: " + state);
+
+                if (AudioManager.SCO_AUDIO_STATE_CONNECTED == state) {
+                    Log.d(LOG_TAG, "bluetooth connected");
+                    btstatus.setText("Bluetooth Connected");
+                    /*
+                     * Now the connection has been established to the bluetooth device.
+                     * Record audio or whatever (on another thread).With AudioRecord you can record with an object created like this:
+                     * new AudioRecord(MediaRecorder.AudioSource.MIC, 8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                     * AudioFormat.ENCODING_PCM_16BIT, audioBufferSize);
+                     *
+                     * After finishing, don't forget to unregister this receiver and
+                     * to stop the bluetooth connection with am.stopBluetoothSco();
+                     */
+                    unregisterReceiver(this);
+                }
+                else{
+                    //maybe a text prompt saying connected?
+                    Log.d(LOG_TAG, "bluetooth connection failed");
+                }
+
+            }
+        }, new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_CHANGED));
     }
 
 

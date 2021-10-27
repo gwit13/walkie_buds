@@ -38,4 +38,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:icon="@android:drawable/ic_media_play" />
 
+    <TextView
+        android:id="@+id/btstatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth Disconnected"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/recstatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Not Recording"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
