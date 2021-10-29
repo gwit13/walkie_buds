@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int REQUEST_MODIFY_AUDIO_SETTINGS = 300;
+    private static final int ASK_MULTIPLE_PERMISSION_REQUEST_CODE = 400;
 
     private static String fileName = null;
 
@@ -63,16 +64,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        System.out.println("hello");
         switch (requestCode){
             case REQUEST_RECORD_AUDIO_PERMISSION:
                 permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
                 break;
             case REQUEST_MODIFY_AUDIO_SETTINGS:
                 permissionToModify = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                System.out.println("Hello?");
                 break;
         }
         if(!permissionToRecord)
-            finish();
+            System.out.println("HIIIIIII");
     }
 
     //call methods
@@ -151,10 +155,16 @@ public class MainActivity extends AppCompatActivity {
         fileName = getExternalCacheDir().getAbsolutePath();
         fileName += "/audiorecordtest.3gp";
 
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
+        //ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        //ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
+
+        requestPermissions(new String[]{
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.MODIFY_AUDIO_SETTINGS},
+                ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
 
         playback = findViewById(R.id.button);
+        text = findViewById(R.id.text);
         share = findViewById(R.id.floatingActionButton);
         btstatus = findViewById(R.id.btstatus);
         recstatus = findViewById(R.id.recstatus);
