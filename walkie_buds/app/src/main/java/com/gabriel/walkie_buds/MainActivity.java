@@ -1,12 +1,16 @@
 package com.gabriel.walkie_buds;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     public TextView text;
     public TextView btstatus;
     public TextView recstatus;
+    private Activity mActivity;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int REQUEST_MODIFY_AUDIO_SETTINGS = 300;
@@ -158,11 +163,12 @@ public class MainActivity extends AppCompatActivity {
         //ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         //ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
 
-        requestPermissions(new String[]{
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.MODIFY_AUDIO_SETTINGS},
-                ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
+//        requestPermissions(new String[]{
+//                        Manifest.permission.RECORD_AUDIO,
+//                        Manifest.permission.MODIFY_AUDIO_SETTINGS},
+//                ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
 
+        mActivity = MainActivity.this;
         playback = findViewById(R.id.button);
         text = findViewById(R.id.text);
         share = findViewById(R.id.floatingActionButton);
@@ -231,4 +237,86 @@ public class MainActivity extends AppCompatActivity {
             player = null;
         }
     }
+
+    protected void checkPermission(){
+        if(ContextCompat.checkSelfPermission(mActivity,Manifest.permission.CAMERA)
+                + ContextCompat.checkSelfPermission(
+                mActivity,Manifest.permission.READ_CONTACTS)
+                + ContextCompat.checkSelfPermission(
+                mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED){
+
+            // Do something, when permissions not granted
+            if(ActivityCompat.shouldShowRequestPermissionRationale(
+                    mActivity,Manifest.permission.CAMERA)
+                    || ActivityCompat.shouldShowRequestPermissionRationale(
+                    mActivity,Manifest.permission.READ_CONTACTS)
+                    || ActivityCompat.shouldShowRequestPermissionRationale(
+                    mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+                // If we should give explanation of requested permissions
+
+                // Show an alert dialog here with request explanation
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                builder.setMessage("Camera, Read Contacts and Write External" +
+                        " Storage permissions are required to do the task.");
+                builder.setTitle("Please grant those permissions");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        ActivityCompat.requestPermissions(
+                                mActivity,
+                                new String[]{
+                                        Manifest.permission.CAMERA,
+                                        Manifest.permission.READ_CONTACTS,
+                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                },
+                                MY_PERMISSIONS_REQUEST_CODE
+                        );
+                    }
+                });
+                builder.setNeutralButton("Cancel",null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }else{
+                // Directly request for required permissions, without explanation
+                ActivityCompat.requestPermissions(
+                        mActivity,
+                        new String[]{
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.READ_CONTACTS,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        },
+                        MY_PERMISSIONS_REQUEST_CODE
+                );
+            }
+        }else {
+            // Do something, when permissions are already granted
+            Toast.makeText(mContext,"Permissions already granted",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        switch (requestCode){
+            case MY_PERMISSIONS_REQUEST_CODE:{
+                // When request is cancelled, the results array are empty
+                if(
+                        (grantResults.length >0) &&
+                                (grantResults[0]
+                                        + grantResults[1]
+                                        + grantResults[2]
+                                        == PackageManager.PERMISSION_GRANTED
+                                )
+                ){
+                    // Permissions are granted
+                    Toast.makeText(mContext,"Permissions granted.",Toast.LENGTH_SHORT).show();
+                }else {
+                    // Permissions are denied
+                    Toast.makeText(mContext,"Permissions denied.",Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+}
 }
