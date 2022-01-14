@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     public TextView text;
     public TextView btstatus;
     public TextView recstatus;
+    public TextView audiorec;
+    public TextView audioperm;
     private Activity mActivity;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -73,15 +75,27 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode){
             case REQUEST_RECORD_AUDIO_PERMISSION:
                 permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
+                if(permissionToRecord)
+                    audiorec.setText("Audio Permissions granted: " + permissionToRecord);
+                else
+                    audiorec.setText("Audio Permissions denied: " + permissionToRecord);
+                requestSecondPermission();
                 break;
             case REQUEST_MODIFY_AUDIO_SETTINGS:
                 permissionToModify = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                if(permissionToModify)
+                    audioperm.setText("Audio Settings granted: " + permissionToModify);
+                else
+                    audioperm.setText("Audio Settings denied: " + permissionToModify);
                 System.out.println("Hello?");
                 break;
         }
         if(!permissionToRecord)
             System.out.println("HIIIIIII");
+    }
+
+    public void requestSecondPermission(){
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
     }
 
     //call methods
@@ -160,7 +174,10 @@ public class MainActivity extends AppCompatActivity {
         fileName = getExternalCacheDir().getAbsolutePath();
         fileName += "/audiorecordtest.3gp";
 
-        //ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        audiorec = findViewById(R.id.audiorec);
+        audioperm = findViewById(R.id.audioperm);
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         //ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
 
 //        requestPermissions(new String[]{
@@ -238,85 +255,85 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void checkPermission(){
-        if(ContextCompat.checkSelfPermission(mActivity,Manifest.permission.CAMERA)
-                + ContextCompat.checkSelfPermission(
-                mActivity,Manifest.permission.READ_CONTACTS)
-                + ContextCompat.checkSelfPermission(
-                mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED){
-
-            // Do something, when permissions not granted
-            if(ActivityCompat.shouldShowRequestPermissionRationale(
-                    mActivity,Manifest.permission.CAMERA)
-                    || ActivityCompat.shouldShowRequestPermissionRationale(
-                    mActivity,Manifest.permission.READ_CONTACTS)
-                    || ActivityCompat.shouldShowRequestPermissionRationale(
-                    mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-                // If we should give explanation of requested permissions
-
-                // Show an alert dialog here with request explanation
-                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-                builder.setMessage("Camera, Read Contacts and Write External" +
-                        " Storage permissions are required to do the task.");
-                builder.setTitle("Please grant those permissions");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        ActivityCompat.requestPermissions(
-                                mActivity,
-                                new String[]{
-                                        Manifest.permission.CAMERA,
-                                        Manifest.permission.READ_CONTACTS,
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                },
-                                MY_PERMISSIONS_REQUEST_CODE
-                        );
-                    }
-                });
-                builder.setNeutralButton("Cancel",null);
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            }else{
-                // Directly request for required permissions, without explanation
-                ActivityCompat.requestPermissions(
-                        mActivity,
-                        new String[]{
-                                Manifest.permission.CAMERA,
-                                Manifest.permission.READ_CONTACTS,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        },
-                        MY_PERMISSIONS_REQUEST_CODE
-                );
-            }
-        }else {
-            // Do something, when permissions are already granted
-            Toast.makeText(mContext,"Permissions already granted",Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
-        switch (requestCode){
-            case MY_PERMISSIONS_REQUEST_CODE:{
-                // When request is cancelled, the results array are empty
-                if(
-                        (grantResults.length >0) &&
-                                (grantResults[0]
-                                        + grantResults[1]
-                                        + grantResults[2]
-                                        == PackageManager.PERMISSION_GRANTED
-                                )
-                ){
-                    // Permissions are granted
-                    Toast.makeText(mContext,"Permissions granted.",Toast.LENGTH_SHORT).show();
-                }else {
-                    // Permissions are denied
-                    Toast.makeText(mContext,"Permissions denied.",Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
-        }
-    }
-}
+//    protected void checkPermission(){
+//        if(ContextCompat.checkSelfPermission(mActivity,Manifest.permission.CAMERA)
+//                + ContextCompat.checkSelfPermission(
+//                mActivity,Manifest.permission.READ_CONTACTS)
+//                + ContextCompat.checkSelfPermission(
+//                mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                != PackageManager.PERMISSION_GRANTED){
+//
+//            // Do something, when permissions not granted
+//            if(ActivityCompat.shouldShowRequestPermissionRationale(
+//                    mActivity,Manifest.permission.CAMERA)
+//                    || ActivityCompat.shouldShowRequestPermissionRationale(
+//                    mActivity,Manifest.permission.READ_CONTACTS)
+//                    || ActivityCompat.shouldShowRequestPermissionRationale(
+//                    mActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+//                // If we should give explanation of requested permissions
+//
+//                // Show an alert dialog here with request explanation
+//                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+//                builder.setMessage("Camera, Read Contacts and Write External" +
+//                        " Storage permissions are required to do the task.");
+//                builder.setTitle("Please grant those permissions");
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i) {
+//                        ActivityCompat.requestPermissions(
+//                                mActivity,
+//                                new String[]{
+//                                        Manifest.permission.CAMERA,
+//                                        Manifest.permission.READ_CONTACTS,
+//                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                                },
+//                                MY_PERMISSIONS_REQUEST_CODE
+//                        );
+//                    }
+//                });
+//                builder.setNeutralButton("Cancel",null);
+//                AlertDialog dialog = builder.create();
+//                dialog.show();
+//            }else{
+//                // Directly request for required permissions, without explanation
+//                ActivityCompat.requestPermissions(
+//                        mActivity,
+//                        new String[]{
+//                                Manifest.permission.CAMERA,
+//                                Manifest.permission.READ_CONTACTS,
+//                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                        },
+//                        MY_PERMISSIONS_REQUEST_CODE
+//                );
+//            }
+//        }else {
+//            // Do something, when permissions are already granted
+//            Toast.makeText(mContext,"Permissions already granted",Toast.LENGTH_SHORT).show();
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+//        switch (requestCode){
+//            case MY_PERMISSIONS_REQUEST_CODE:{
+//                // When request is cancelled, the results array are empty
+//                if(
+//                        (grantResults.length >0) &&
+//                                (grantResults[0]
+//                                        + grantResults[1]
+//                                        + grantResults[2]
+//                                        == PackageManager.PERMISSION_GRANTED
+//                                )
+//                ){
+//                    // Permissions are granted
+//                    Toast.makeText(mContext,"Permissions granted.",Toast.LENGTH_SHORT).show();
+//                }else {
+//                    // Permissions are denied
+//                    Toast.makeText(mContext,"Permissions denied.",Toast.LENGTH_SHORT).show();
+//                }
+//                return;
+//            }
+//        }
+//    }
+//}
 }
