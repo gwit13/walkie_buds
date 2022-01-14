@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "switchboard";
 
     public Button playback;
+    public Button btcheck;
     public ExtendedFloatingActionButton share;
     public TextView text;
     public TextView btstatus;
@@ -57,8 +58,9 @@ public class MainActivity extends AppCompatActivity {
     //request permission
     private boolean permissionToRecord = false;
     private boolean permissionToModify = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.MODIFY_AUDIO_SETTINGS};
-
+    private String[] permissions = {Manifest.permission.MODIFY_AUDIO_SETTINGS};
+    //Manifest.permission.RECORD_AUDIO
+    
     //bluetooth
     public AudioManager am;
 
@@ -177,7 +179,8 @@ public class MainActivity extends AppCompatActivity {
         audiorec = findViewById(R.id.audiorec);
         audioperm = findViewById(R.id.audioperm);
 
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        requestSecondPermission();
+        //ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         //ActivityCompat.requestPermissions(this, permissions, REQUEST_MODIFY_AUDIO_SETTINGS);
 
 //        requestPermissions(new String[]{
@@ -190,10 +193,15 @@ public class MainActivity extends AppCompatActivity {
         text = findViewById(R.id.text);
         share = findViewById(R.id.floatingActionButton);
         btstatus = findViewById(R.id.btstatus);
+        btcheck = findViewById(R.id.bt_check);
         recstatus = findViewById(R.id.recstatus);
 
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        bluetoothConnect();
 
+    }
+
+    public void bluetoothConnect(){
         registerReceiver(new BroadcastReceiver() {
 
             @Override
@@ -253,6 +261,10 @@ public class MainActivity extends AppCompatActivity {
             player.release();
             player = null;
         }
+    }
+
+    public void btcheck(View view) {
+        bluetoothConnect();
     }
 
 //    protected void checkPermission(){
